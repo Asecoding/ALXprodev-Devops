@@ -31,3 +31,11 @@ for name in "${POKEMON_LIST[@]}"; do
     sleep "$DELAY"
 done
 
+if [ "$success" = false ]; then
+        echo "$(date): Failed to fetch $name after $MAX_RETRIES attempts. HTTP status: $response" >> errors.txt
+        echo "❌ Error logged for $name"
+    fi
+
+    # Respect rate limits
+    sleep "$DELAY"
+done
