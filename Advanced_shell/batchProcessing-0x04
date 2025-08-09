@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# List of Pokémon
+POKEMON_LIST=("bulbasaur" "ivysaur" "venusaur" "charmander" "charmeleon")
+
+# API base URL
+API_BASE="https://pokeapi.co/api/v2/pokemon"
+
+# Max retries
+MAX_RETRIES=3
+
+# Delay between retries
+RETRY_DELAY=2
+
+# Function to fetch a single Pokémon with retry logic
+fetch_pokemon() {
+    local name="$1"
+    local url="${API_BASE}/${name}"
+    local file="${name}.json"
+    local attempt=1
+
+    while [ "$attempt" -le "$MAX_RETRIES" ]; do
+        response=$(curl -s -w "%{http_code}" -o "$file" "$url")
+
+        if [ "$response" -eq 200 ]; then
+            echo "✅ [$name] Fetched successfully."
+            return 0
+        else
+            echo "⚠️ [$name] Attempt $attempt failed (HTTP $response)"
+            ((attempt++))
+            sleep "$RETRY_DELAY"
+        fi
+    done
+
+    echo "$(date): ❌ [$name] Failed after $MAX_RETRIES attempts." >> errors.txt
+}
+
+# Start fetching in parallel
+echo "🚀 Starting parallel fetch..."
+
+for name in "${POKEMON_LIST[@]}"; do
+    fetch_pokemon "$name" &
+done
+
+# Wait for all background jobs to finish
+wait
+
+echo "✅ All fetches complete."
+
