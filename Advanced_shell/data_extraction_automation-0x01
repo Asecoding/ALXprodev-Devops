@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Input JSON file
+DATA_FILE="data.json"
+
+# Extract fields using jq
+name=$(jq -r '.name' "$DATA_FILE")
+height=$(jq -r '.height' "$DATA_FILE")
+weight=$(jq -r '.weight' "$DATA_FILE")
+type=$(jq -r '.types[0].type.name' "$DATA_FILE")
+
+# Convert height (decimeters to meters) and weight (hectograms to kilograms)
+height_m=$(awk "BEGIN {printf \"%.1f\", $height / 10}")
+weight_kg=$(awk "BEGIN {printf \"%.0f\", $weight / 10}")
+
+# Capitalize name and type using sed
+name_cap=$(echo "$name" | sed 's/.*/\u&/')
+type_cap=$(echo "$type" | sed 's/.*/\u&/')
+
+# Format output
+echo "$name_cap is of type $type_cap, weighs ${weight_kg}kg, and is ${height_m}m tall."
+
